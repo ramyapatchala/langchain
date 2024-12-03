@@ -87,8 +87,6 @@ def plan_itinerary_with_langchain():
     st.markdown("### 🗺️ AI-Generated Itinerary")
     places_list = "\n".join(st.session_state['itinerary_bucket'])
     
-    # Date picker for user input
-    selected_date = st.date_input("Choose a date for your trip (optional):", value=None)
     if selected_date:
         st.info(f"Planning itinerary for {selected_date.strftime('%A, %B %d, %Y')} 🎉")
     else:
@@ -149,7 +147,8 @@ def get_festivals(selected_date):
 
 # Handle search input
 user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
-
+# Date picker for user input
+selected_date = st.date_input("Choose a date for your trip (optional):", value=None)
 if user_query:
     if user_query not in st.session_state["search_history"]:
         st.session_state["search_history"].append(user_query)
