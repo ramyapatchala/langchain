@@ -31,7 +31,7 @@ api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["openai_api_key"]
 
 # Initialize LangChain ChatOpenAI model
-llm = ChatOpenAI(temperature=0.3, model="gpt-4o-mini", openai_api_key=openai_api_key, streaming=True,
+llm = ChatOpenAI(temperature=0.3, model="gpt-4o-mini", openai_api_key=openai_api_key,
     verbose=True)
 
 # Function to fetch places from Google Places API
@@ -152,8 +152,7 @@ def plan_itinerary_with_langchain():
     with st.spinner("Generating your itinerary..."):
         placeholder = st.empty()  # For dynamically updating the output
         response = llm([HumanMessage(content=formatted_prompt)])
-        for chunk in response:
-            placeholder.write(chunk.content)
+        st.markdown(response.content)
     
 # Dummy function to fetch festivals for a date
 def get_festivals(selected_date):
