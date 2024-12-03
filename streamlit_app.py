@@ -29,7 +29,7 @@ with st.sidebar:
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
     st.markdown("### Saved Itineraries")
     if st.session_state['itineraries']:
-        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + st.session_state['itineraries']))
+        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + st.session_state['itineraries'])
         if selected_itinerary:
             st.markdown("### 📋 Selected Itinerary")
             selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
