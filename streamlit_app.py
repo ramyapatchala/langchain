@@ -3,6 +3,7 @@ import requests
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
+from datetime import date
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
@@ -86,32 +87,65 @@ def plan_itinerary_with_langchain():
     st.markdown("### 🗺️ AI-Generated Itinerary")
     places_list = "\n".join(st.session_state['itinerary_bucket'])
     
+    # Date picker for user input
+    selected_date = st.date_input("Choose a date for your trip (optional):", value=None)
+    if selected_date:
+        st.info(f"Planning itinerary for {selected_date.strftime('%A, %B %d, %Y')} 🎉")
+    else:
+        st.info("No specific date chosen. Starting from 9:00 AM by default.")
+
+    # Check for festivals or events (dummy logic, can be replaced with an API)
+    festivals = get_festivals(selected_date) if selected_date else None
+    if festivals:
+        st.markdown(f"### 📅 Events and Celebrations on {selected_date}:")
+        for event in festivals:
+            st.markdown(f"- {event}")
+
     # Define the prompt template
     prompt_template = PromptTemplate(
-        input_variables=["places"],
+        input_variables=["places", "date", "festivals"],
         template="""
         Plan a travel itinerary for the following places:
         {places}
+
+        Date of travel: {date}
+
+        Take into account the following festivals or celebrations (if any):
+        {festivals}
 
         Provide a detailed plan that includes:
         - The best order to visit these places.
         - Estimated time at each location.
         - Transportation time between locations.
         - Suggestions for breaks and meals.
+        - Adjustments for events or celebrations.
 
-        Assume the traveler starts their day at 9:00 AM and ends by 6:00 PM.
+        Assume the traveler starts their day at 9:00 AM unless specified otherwise.
         """
     )
 
-    # Format the prompt
-    formatted_prompt = prompt_template.format(places=places_list)
+    # Prepare prompt variables
+    date_str = selected_date.strftime('%A, %B %d, %Y') if selected_date else "Not specified"
+    festivals_str = "\n".join(festivals) if festivals else "None"
+    formatted_prompt = prompt_template.format(places=places_list, date=date_str, festivals=festivals_str)
 
     # Use LangChain's ChatOpenAI model
     with st.spinner("Generating your itinerary..."):
         response = llm([HumanMessage(content=formatted_prompt)])
 
     # Display the generated itinerary
-    st.markdown(response.content)
+    st.markdown(response[0].content)
+
+# Dummy function to fetch festivals for a date
+def get_festivals(selected_date):
+    if not selected_date:
+        return None
+    # Replace this logic with a real API or database lookup
+    events = {
+        date(2024, 12, 25): ["Christmas Day Celebration 🎄", "Winter Markets"],
+        date(2024, 1, 1): ["New Year's Day Parade 🎆"],
+    }
+    return events.get(selected_date, None)
 
 # Handle search input
 user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
