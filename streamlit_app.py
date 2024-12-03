@@ -130,19 +130,25 @@ def plan_itinerary_with_langchain():
     with st.spinner("Generating your itinerary..."):
         response = llm([HumanMessage(content=formatted_prompt)])
         st.markdown(response.content)
-        if st.button("Save Itinerary"):
-            save_itinerary(response.content)
+        save_itinerary(response.content)
 
 def save_itinerary(response):
+    # Create a text input for the itinerary title
     itinerary_title = st.text_input("Enter a title for this itinerary:")
-    if not itinerary_title:
-        st.warning("Please enter a title for your itinerary.")
-    elif itinerary_title in st.session_state['itineraries']:
-        st.warning("Itinerary with this title already exists. Choose a unique title.")
-    else:
-                # Save itinerary to session state
-        st.session_state['itineraries'][itinerary_title] = response
-        st.success(f"Itinerary '{itinerary_title}' saved!")
+    
+    # Add a save button to explicitly trigger saving
+    if st.button("Confirm Save"):
+        if not itinerary_title:
+            st.warning("Please enter a title for your itinerary.")
+        elif itinerary_title in st.session_state['itineraries']:
+            st.warning("Itinerary with this title already exists. Choose a unique title.")
+        else:
+            # Save itinerary to session state
+            st.session_state['itineraries'][itinerary_title] = response
+            st.success(f"Itinerary '{itinerary_title}' saved successfully!")
+            # Clear the input after saving
+            st.experimental_rerun()
+
 
 # Handle search input
 user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
