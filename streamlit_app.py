@@ -150,11 +150,11 @@ def plan_itinerary_with_langchain():
 
     # Use LangChain's ChatOpenAI model
     with st.spinner("Generating your itinerary..."):
+        placeholder = st.empty()  # For dynamically updating the output
         response = llm([HumanMessage(content=formatted_prompt)])
-
-    # Display the generated itinerary
-    st.markdown(response.content)
-
+        for chunk in response:
+            placeholder.write(chunk.content)
+    
 # Dummy function to fetch festivals for a date
 def get_festivals(selected_date):
     if not selected_date:
