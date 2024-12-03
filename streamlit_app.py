@@ -35,19 +35,6 @@ with st.sidebar:
         for place in selected_places:
             st.write(f"- {place}")
 
-# Save itinerary functionality
-if st.button("Save Itinerary"):
-    if not st.session_state['itinerary_bucket']:
-        st.warning("Itinerary bucket is empty. Add some places first!")
-    else:
-        itinerary_title = st.text_input("Enter a title for this itinerary:")
-        if itinerary_title and itinerary_title not in st.session_state['itineraries']:
-            st.session_state['itineraries'][itinerary_title] = st.session_state['itinerary_bucket'].copy()
-            st.success(f"Itinerary '{itinerary_title}' saved!")
-        elif itinerary_title in st.session_state['itineraries']:
-            st.warning("Itinerary with this title already exists. Choose a unique title.")
-
-
 # API key for Google Places API
 api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["openai_api_key"]
@@ -175,6 +162,17 @@ def plan_itinerary_with_langchain():
         placeholder = st.empty()  # For dynamically updating the output
         response = llm([HumanMessage(content=formatted_prompt)])
         st.markdown(response.content)
+        # Save itinerary functionality
+        if st.button("Save Itinerary"):
+            if not st.session_state['itinerary_bucket']:
+                st.warning("Itinerary bucket is empty. Add some places first!")
+            else:
+                itinerary_title = st.text_input("Enter a title for this itinerary:")
+                if itinerary_title and itinerary_title not in st.session_state['itineraries']:
+                    st.session_state['itineraries'][itinerary_title] = response.content
+                    st.success(f"Itinerary '{itinerary_title}' saved!")
+                elif itinerary_title in st.session_state['itineraries']:
+                    st.warning("Itinerary with this title already exists. Choose a unique title.")
     
 # Dummy function to fetch festivals for a date
 def get_festivals(selected_date):
