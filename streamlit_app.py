@@ -4,6 +4,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from datetime import date
+from PIL import Image
+import io
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
@@ -50,7 +52,18 @@ def fetch_places_from_google(query):
     except Exception as e:
         return {"error": str(e)}
 
-# Display places in 3x3 grid layout
+# Helper function to resize images
+def fetch_and_resize_image(url, size=(200, 200)):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(io.BytesIO(response.content))
+        img = img.resize(size)  # Resize to uniform dimensions
+        return img
+    except Exception as e:
+        return None  # Return None if fetching or resizing fails
+
+# Display places in 3x3 grid layout with uniform image sizes
 def display_places_grid(places):
     cols = st.columns(3)
     for idx, place in enumerate(places):
@@ -65,7 +78,12 @@ def display_places_grid(places):
                 photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_ref}&key={api_key}"
 
             if photo_url:
-                st.image(photo_url, caption=name, use_column_width=True)
+                # Fetch and resize the image
+                img = fetch_and_resize_image(photo_url)
+                if img:
+                    st.image(img, caption=name, use_column_width=False)
+                else:
+                    st.write(name)
             else:
                 st.write(name)
 
@@ -77,6 +95,7 @@ def display_places_grid(places):
             else:
                 if st.button("Add to Itinerary", key=f"add_{idx}"):
                     st.session_state['itinerary_bucket'].append(name)
+
 
 # Function to generate an itinerary using LangChain
 def plan_itinerary_with_langchain():
