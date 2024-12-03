@@ -91,6 +91,7 @@ def configure_llm():
     elif llm_opt == "llama3.2:3b":
         llm = ChatOllama(model="llama3.2", base_url=st.secrets["OLLAMA_ENDPOINT"])
     elif llm_opt == "gpt-4o-mini":
+        st.write("OPENAI_API_KEY:", st.secrets.get("OPENAI_API_KEY"))
         llm = ChatOpenAI(model_name=llm_opt, temperature=0, streaming=True, api_key=st.secrets["OPENAI_API_KEY"])
     else:
         model, openai_api_key = choose_custom_openai_key()
