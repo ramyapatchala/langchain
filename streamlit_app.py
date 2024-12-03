@@ -25,6 +25,13 @@ chat = ChatOpenAI(
 if "memory" not in st.session_state:
     st.session_state["memory"] = ConversationBufferMemory(return_messages=True)
 
+# Ensure the memory has at least one message
+if not st.session_state["memory"].chat_memory.messages:
+    # Add a default system message to define chatbot behavior
+    st.session_state["memory"].chat_memory.add_message(
+        SystemMessage(content="You are a helpful travel guide assistant.")
+    )
+
 # Display chat history
 for message in st.session_state["messages"]:
     if isinstance(message, HumanMessage):
@@ -46,6 +53,8 @@ if user_query:
 
     # Generate response using LangChain
     with st.spinner("Generating response..."):
+        # Add user message to memory
+        st.session_state["memory"].chat_memory.add_message(user_message)
         response = chat(messages=st.session_state["memory"].chat_memory.messages)
         ai_message = AIMessage(content=response.content)
 
