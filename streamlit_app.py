@@ -13,7 +13,7 @@ if 'itinerary_bucket' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 if 'itineraries' not in st.session_state:
-    st.session_state['itineraries'] = []
+    st.session_state['itineraries'] = {}
 
 # Streamlit app title and sidebar filters
 st.title("🌍 **Travel Planner with AI** ✈️")
