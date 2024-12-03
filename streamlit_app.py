@@ -64,14 +64,8 @@ if user_query:
         response_placeholder = st.empty()
         response_stream = chat(messages=st.session_state["memory"].chat_memory.messages)
         full_response = ""
-        st.write(response_stream)
-        for chunk in response_stream:
-            if chunk.message and chunk.message.content:  # Ensure chunk has content
-                full_response += chunk.message.content  # Access the correct attribute
-                response_placeholder.markdown(full_response + "▌")  # Update the UI incrementally
-
-        response_placeholder.markdown(full_response)
-
+        st.markdown(response_stream.content)
+        
     # Add the response to memory and display
     ai_message = AIMessage(content=full_response)
     st.session_state["memory"].chat_memory.add_message(ai_message)
