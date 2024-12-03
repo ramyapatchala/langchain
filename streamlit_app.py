@@ -84,23 +84,33 @@ def plan_itinerary_with_langchain():
 
     st.markdown("### 🗺️ AI-Generated Itinerary")
     places_list = "\n".join(st.session_state['itinerary_bucket'])
-    prompt = f"""
-    Plan a travel itinerary for the following places:
-    {places_list}
+    
+    # Define the prompt template
+    prompt_template = PromptTemplate(
+        input_variables=["places"],
+        template="""
+        Plan a travel itinerary for the following places:
+        {places}
 
-    Provide a detailed plan that includes:
-    - The best order to visit these places.
-    - Estimated time at each location.
-    - Transportation time between locations.
-    - Suggestions for breaks and meals.
+        Provide a detailed plan that includes:
+        - The best order to visit these places.
+        - Estimated time at each location.
+        - Transportation time between locations.
+        - Suggestions for breaks and meals.
 
-    Assume the traveler starts their day at 9:00 AM and ends by 6:00 PM.
-    """
+        Assume the traveler starts their day at 9:00 AM and ends by 6:00 PM.
+        """
+    )
 
+    # Format the prompt
+    formatted_prompt = prompt_template.format(places=places_list)
+
+    # Use LangChain's ChatOpenAI model
     with st.spinner("Generating your itinerary..."):
-        response = llm.generate([ChatPromptTemplate.from_string(prompt).to_message()])
+        response = llm([HumanMessage(content=formatted_prompt)])
 
-    st.markdown(response.generations[0].text)
+    # Display the generated itinerary
+    st.markdown(response[0].content)
 
 # Handle search input
 user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
