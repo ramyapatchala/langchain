@@ -1,86 +1,46 @@
 import streamlit as st
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, AIMessage, SystemMessage
-from langchain.memory import ConversationBufferMemory
 import requests
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
 
-# Initialize session state
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
-if 'memory' not in st.session_state:
-    st.session_state['memory'] = ConversationBufferMemory(return_messages=True)
-if 'user_input' not in st.session_state:
-    st.session_state['user_input'] = ""
+# Initialize session state for itinerary bucket and search history
+if 'itinerary_bucket' not in st.session_state:
+    st.session_state['itinerary_bucket'] = []
+if 'search_history' not in st.session_state:
+    st.session_state['search_history'] = []
 
-# API keys (replace with your own or Streamlit secrets)
-openai_api_key = st.secrets["key1"]
-google_api_key = st.secrets["api_key"]
+# Streamlit app title and sidebar filters
+st.title("🌍 **Travel Planner with AI** ✈️")
+st.markdown("Discover amazing places and plan your trip effortlessly!")
 
-# Initialize LangChain ChatOpenAI with streaming
-chat = ChatOpenAI(
-    openai_api_key=openai_api_key,
-    model="gpt-4",
-    temperature=0.7,
-    streaming=True
-)
+with st.sidebar:
+    st.markdown("### Filters")
+    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 3.5, step=0.1)
+    max_results = st.number_input("Max Results to Display", min_value=1, max_value=20, value=9)
+    st.markdown("___")
+    st.markdown("### Search History")
+    selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
 
-# Ensure the memory has a default system message
-if not st.session_state["memory"].chat_memory.messages:
-    st.session_state["memory"].chat_memory.add_message(
-        SystemMessage(content="You are a helpful travel guide assistant.")
-    )
+# API key for Google Places API
+api_key = st.secrets["api_key"]
+openai_api_key = st.secrets["openai_api_key"]
 
-# Streamlit app UI
-st.title("🌍 **Interactive Travel Guide Chatbot** 🤖")
-st.markdown("Your personal travel assistant to explore amazing places.")
-
-# Display chat history
-for message in st.session_state["messages"]:
-    if isinstance(message, HumanMessage):
-        with st.chat_message("user"):
-            st.markdown(message.content)
-    elif isinstance(message, AIMessage):
-        with st.chat_message("assistant"):
-            st.markdown(message.content)
-
-# User input box
-user_query = st.text_input(
-    "🔍 Ask me anything about travel (e.g., 'restaurants in Los Angeles'): ",
-    value=st.session_state['user_input'],
-    key="input_box",
-    on_change=lambda: st.session_state.update({"user_input": ""})
-)
-
-if user_query:
-    # Add user input to memory
-    user_message = HumanMessage(content=user_query)
-    st.session_state["memory"].chat_memory.add_message(user_message)
-    st.session_state["messages"].append(user_message)
-    with st.chat_message("user"):
-        st.markdown(user_message.content)
-
-    # Generate a streaming response
-    with st.spinner("Generating response..."):
-        response_placeholder = st.empty()
-        response_stream = chat(messages=st.session_state["memory"].chat_memory.messages)
-        full_response = ""
-        st.markdown(response_stream.content)
-        
-    # Add the response to memory and display
-    ai_message = AIMessage(content=full_response)
-    st.session_state["memory"].chat_memory.add_message(ai_message)
-    st.session_state["messages"].append(ai_message)
+# Initialize LangChain ChatOpenAI model
+llm = ChatOpenAI(temperature=0.7, model="gpt-4", openai_api_key=openai_api_key)
 
 # Function to fetch places from Google Places API
-def fetch_places(query, min_rating=3.5, max_results=10):
+def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-    params = {"query": query, "key": google_api_key}
+    params = {
+        "query": query,
+        "key": api_key
+    }
     try:
         response = requests.get(base_url, params=params)
         if response.status_code == 200:
             data = response.json()
             results = data.get("results", [])
-            # Filter and limit results
+            # Filter by minimum rating and limit results
             filtered_results = [place for place in results if place.get("rating", 0) >= min_rating]
             return filtered_results[:max_results]
         else:
@@ -88,24 +48,91 @@ def fetch_places(query, min_rating=3.5, max_results=10):
     except Exception as e:
         return {"error": str(e)}
 
-# Display place details (if requested)
-if "places_query" in st.session_state:
-    places = fetch_places(st.session_state["places_query"])
-    if isinstance(places, dict) and "error" in places:
-        st.error(f"Error: {places['error']}")
-    elif not places:
+# Display places in 3x3 grid layout
+def display_places_grid(places):
+    cols = st.columns(3)
+    for idx, place in enumerate(places):
+        with cols[idx % 3]:
+            # Display place information in a tile
+            name = place.get("name", "No Name")
+            lat, lng = place["geometry"]["location"].values()
+            map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
+            photo_url = None
+            if "photos" in place:
+                photo_ref = place["photos"][0]["photo_reference"]
+                photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_ref}&key={api_key}"
+
+            if photo_url:
+                st.image(photo_url, caption=name, use_column_width=True)
+            else:
+                st.write(name)
+
+            st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
+
+            # Display "Add to Itinerary" or "Added" button
+            if name in st.session_state['itinerary_bucket']:
+                st.button("Added", disabled=True, key=f"added_{idx}")
+            else:
+                if st.button("Add to Itinerary", key=f"add_{idx}"):
+                    st.session_state['itinerary_bucket'].append(name)
+
+# Function to generate an itinerary using LangChain
+def plan_itinerary_with_langchain():
+    if not st.session_state['itinerary_bucket']:
+        st.warning("No places in itinerary bucket!")
+        return
+
+    st.markdown("### 🗺️ AI-Generated Itinerary")
+    places_list = "\n".join(st.session_state['itinerary_bucket'])
+    prompt = f"""
+    Plan a travel itinerary for the following places:
+    {places_list}
+
+    Provide a detailed plan that includes:
+    - The best order to visit these places.
+    - Estimated time at each location.
+    - Transportation time between locations.
+    - Suggestions for breaks and meals.
+
+    Assume the traveler starts their day at 9:00 AM and ends by 6:00 PM.
+    """
+
+    with st.spinner("Generating your itinerary..."):
+        response = llm.generate([ChatPromptTemplate.from_string(prompt).to_message()])
+
+    st.markdown(response.generations[0].text)
+
+# Handle search input
+user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
+
+if user_query:
+    if user_query not in st.session_state["search_history"]:
+        st.session_state["search_history"].append(user_query)
+
+    st.markdown(f"### Results for: **{user_query}**")
+    with st.spinner("Fetching places..."):
+        places_data = fetch_places_from_google(user_query)
+
+    if isinstance(places_data, dict) and "error" in places_data:
+        st.error(f"Error: {places_data['error']}")
+    elif not places_data:
         st.warning("No places found matching your criteria.")
     else:
-        st.markdown("### 📍 Top Recommendations")
-        for idx, place in enumerate(places):
-            with st.expander(f"{idx + 1}. {place.get('name', 'No Name')}"):
-                st.write(f"📍 **Address**: {place.get('formatted_address', 'No address available')}")
-                st.write(f"🌟 **Rating**: {place.get('rating', 'N/A')} (Based on {place.get('user_ratings_total', 'N/A')} reviews)")
-                st.write(f"💲 **Price Level**: {place.get('price_level', 'N/A')}")
-                if "photos" in place:
-                    photo_ref = place["photos"][0]["photo_reference"]
-                    photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_ref}&key={google_api_key}"
-                    st.image(photo_url, caption=place.get("name", "Photo"), use_column_width=True)
-                lat, lng = place["geometry"]["location"].values()
-                map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
-                st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
+        display_places_grid(places_data)
+
+# Show itinerary bucket
+st.markdown("### 📋 Itinerary Bucket")
+if st.session_state['itinerary_bucket']:
+    for place in st.session_state['itinerary_bucket']:
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(place)
+        with col2:
+            if st.button("Remove", key=f"remove_{place}"):
+                st.session_state['itinerary_bucket'].remove(place)
+else:
+    st.write("Your itinerary bucket is empty.")
+
+# Generate itinerary button
+if st.button("Generate AI Itinerary"):
+    plan_itinerary_with_langchain()
