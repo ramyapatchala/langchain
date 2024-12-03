@@ -6,8 +6,6 @@ from langchain.schema import HumanMessage
 from datetime import date
 from PIL import Image
 import io
-from langchain.callbacks.base import CallbackManager
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
 # Initialize session state for itinerary bucket and search history
@@ -34,7 +32,6 @@ openai_api_key = st.secrets["openai_api_key"]
 
 # Initialize LangChain ChatOpenAI model
 llm = ChatOpenAI(temperature=0.3, model="gpt-4o-mini", openai_api_key=openai_api_key, streaming=True,
-    callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
     verbose=True)
 
 # Function to fetch places from Google Places API
