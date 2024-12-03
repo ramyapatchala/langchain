@@ -30,7 +30,7 @@ api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["openai_api_key"]
 
 # Initialize LangChain ChatOpenAI model
-llm = ChatOpenAI(temperature=0.7, model="gpt-4", openai_api_key=openai_api_key, stream = True)
+llm = ChatOpenAI(temperature=0.7, model="gpt-4", openai_api_key=openai_api_key, streaming = True)
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
