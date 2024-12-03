@@ -66,9 +66,9 @@ if user_query:
         full_response = ""
 
         for chunk in response_stream:
-            if chunk.content:  # Handle content streaming
-                full_response += chunk.content
-                response_placeholder.markdown(full_response + "▌")
+            if chunk.message and chunk.message.content:  # Ensure chunk has content
+                full_response += chunk.message.content  # Access the correct attribute
+                response_placeholder.markdown(full_response + "▌")  # Update the UI incrementally
 
         response_placeholder.markdown(full_response)
 
