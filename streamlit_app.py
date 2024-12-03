@@ -1,7 +1,8 @@
 import streamlit as st
 import requests
 from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import PromptTemplate
+from langchain.schema import HumanMessage
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
