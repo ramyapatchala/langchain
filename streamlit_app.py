@@ -13,6 +13,8 @@ if 'itinerary_bucket' not in st.session_state:
     st.session_state['itinerary_bucket'] = []
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
+if 'itineraries' not in st.session_state:
+    st.session_state['itineraries'] = {}  
 
 # Streamlit app title and sidebar filters
 st.title("🌍 **Travel Planner with AI** ✈️")
@@ -25,6 +27,26 @@ with st.sidebar:
     st.markdown("___")
     st.markdown("### Search History")
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
+    st.markdown("### Saved Itineraries")
+    selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + list(st.session_state['itineraries'].keys()))
+    if selected_itinerary:
+        st.markdown("### 📋 Selected Itinerary")
+        selected_places = st.session_state['itineraries'][selected_itinerary]
+        for place in selected_places:
+            st.write(f"- {place}")
+
+# Save itinerary functionality
+if st.button("Save Itinerary"):
+    if not st.session_state['itinerary_bucket']:
+        st.warning("Itinerary bucket is empty. Add some places first!")
+    else:
+        itinerary_title = st.text_input("Enter a title for this itinerary:")
+        if itinerary_title and itinerary_title not in st.session_state['itineraries']:
+            st.session_state['itineraries'][itinerary_title] = st.session_state['itinerary_bucket'].copy()
+            st.success(f"Itinerary '{itinerary_title}' saved!")
+        elif itinerary_title in st.session_state['itineraries']:
+            st.warning("Itinerary with this title already exists. Choose a unique title.")
+
 
 # API key for Google Places API
 api_key = st.secrets["api_key"]
