@@ -5,7 +5,7 @@ from langchain_community.docstore.document import Document
 from langchain_text_splitters import CharacterTextSplitter
 
 # Set API keys from session state
-openai_api_key = st.secrets['openai_api_key']
+openai_api_key = st.secrets['OPENAI_API_KEY']
 
 # Streamlit app
 st.subheader('Text Summary')
