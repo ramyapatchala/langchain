@@ -13,7 +13,7 @@ if 'itinerary_bucket' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 if 'itineraries' not in st.session_state:
-    st.session_state['itineraries'] = {}
+    st.session_state['itineraries'] = []
 
 # Streamlit app title and sidebar filters
 st.title("🌍 **Travel Planner with AI** ✈️")
@@ -29,12 +29,11 @@ with st.sidebar:
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
     st.markdown("### Saved Itineraries")
     if st.session_state['itineraries']:
-        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + list(st.session_state['itineraries'].keys()))
+        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + st.session_state['itineraries']))
         if selected_itinerary:
             st.markdown("### 📋 Selected Itinerary")
-            selected_places = st.session_state['itineraries'][selected_itinerary]
-            for place in selected_places:
-                st.write(f"- {place}")
+            selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
+            st.markdown(selected_places_itinery)
     else:
         st.write("No saved itineraries yet.")
 
