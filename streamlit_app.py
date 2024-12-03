@@ -64,7 +64,7 @@ if user_query:
         response_placeholder = st.empty()
         response_stream = chat(messages=st.session_state["memory"].chat_memory.messages)
         full_response = ""
-
+        st.write(response_stream)
         for chunk in response_stream:
             if chunk.message and chunk.message.content:  # Ensure chunk has content
                 full_response += chunk.message.content  # Access the correct attribute
