@@ -134,7 +134,7 @@ def plan_itinerary_with_langchain():
         response = llm([HumanMessage(content=formatted_prompt)])
 
     # Display the generated itinerary
-    st.markdown(response[0].content)
+    st.markdown(response.content)
 
 # Dummy function to fetch festivals for a date
 def get_festivals(selected_date):
