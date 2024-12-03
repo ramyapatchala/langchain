@@ -143,7 +143,7 @@ def save_itinerary(response):
     else:
             # Save itinerary to session state
         st.session_state['itineraries'][itinerary_title] = response
-        st.success(f"Itinerary '{itinerary_title}' saved successfully!")
+        st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
             # Clear the input after saving
         st.experimental_rerun()
 
