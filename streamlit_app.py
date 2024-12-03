@@ -111,7 +111,7 @@ def plan_itinerary_with_langchain():
         response = llm([HumanMessage(content=formatted_prompt)])
 
     # Display the generated itinerary
-    st.markdown(response[0].content)
+    st.markdown(response.content)
 
 # Handle search input
 user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
