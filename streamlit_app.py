@@ -99,16 +99,17 @@ def save_itinerary(response):
     # Create a text input for the itinerary title
     itinerary_title = st.text_input("Enter a title for this itinerary:", placeholder="Save this itinerary")
     # Add a save button to explicitly trigger saving
-    if not itinerary_title:
-        st.warning("Please enter a title for your itinerary.")
-    elif itinerary_title in st.session_state['itineraries']:
-        st.warning("Itinerary with this title already exists. Choose a unique title.")
-    else:
-        # Save itinerary to session state
-        st.session_state['itineraries'][itinerary_title]=response
-        st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
-            # Clear the input after saving
-        st.experimental_rerun()
+    if st.button('Save this itinerary'):
+        if not itinerary_title:
+            st.warning("Please enter a title for your itinerary.")
+        elif itinerary_title in st.session_state['itineraries']:
+            st.warning("Itinerary with this title already exists. Choose a unique title.")
+        else:
+            # Save itinerary to session state
+            st.session_state['itineraries'][itinerary_title]=response
+            st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
+                # Clear the input after saving
+            st.experimental_rerun()
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
@@ -131,7 +132,7 @@ with st.sidebar:
     st.markdown("### Search History")
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
     st.markdown("### Saved Itineraries")
-    selected_itinerary = st.selectbox("Recent Itinerary", options=["None"] + list(st.session_state['itineraries'].keys()))
+    selected_itinerary = st.selectbox("Recent Itinerary", options=[""] + list(st.session_state['itineraries'].keys()))
 
 # API key for Google Places API
 api_key = st.secrets["api_key"]
@@ -175,7 +176,7 @@ else:
 if st.button("Generate AI Itinerary"):
     plan_itinerary_with_langchain()
 
-if selected_itinerary and selected_itinerary != 'None':
+if selected_itinerary:
     st.markdown(selected_itinerary)
     selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
     st.markdown(selected_places_itinery)
