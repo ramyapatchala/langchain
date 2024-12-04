@@ -131,7 +131,7 @@ with st.sidebar:
     st.markdown("### Search History")
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
     st.markdown("### Saved Itineraries")
-    selected_itinerary = st.selectbox("Recent Itinerary", options=[""] + st.session_state['itineraries'])    
+    selected_itinerary = st.selectbox("Recent Itinerary", options={} + st.session_state['itineraries'])    
 
 # API key for Google Places API
 api_key = st.secrets["api_key"]
