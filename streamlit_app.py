@@ -92,36 +92,13 @@ def plan_itinerary_with_langchain():
 
     with st.spinner("Generating your itinerary..."):
         response = llm([HumanMessage(content=formatted_prompt)])
-        return response.content
-        #st.markdown(response.content)
-        #save_itinerary(response.content)
-
-def save_itinerary(response):
-    st.markdown('check')
-    st.markdown(st.session_state['itineraries'])
-    # Create a text input for the itinerary title
-    itinerary_title = st.text_input("Enter a title for this itinerary:", placeholder="Save this itinerary")
-    # Add a save button to explicitly trigger saving
-    if not itinerary_title:
-        st.warning("Please enter a title for your itinerary.")
-    elif itinerary_title in st.session_state['itineraries']:
-        st.warning("Itinerary with this title already exists. Choose a unique title.")
-    else:
-            # Save itinerary to session state
-        st.markdown('here')
-        st.session_state.itinerary[itinerary_title]=response
-        st.markdown(st.session_state['itineraries'].keys())
-        st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
-                # Clear the input after saving
-        st.experimental_rerun()
+        st.markdown(response.content)
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
     st.session_state['itinerary_bucket'] = []
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
-if 'itineraries' not in st.session_state:
-    st.session_state['itineraries'] = {}
 
 # Streamlit app title and sidebar filters
 st.title("🌍 **Travel Planner with AI** ✈️")
@@ -178,11 +155,4 @@ if user_query:
     
     # Generate itinerary button
     if st.button("Generate AI Itinerary"):
-        response = plan_itinerary_with_langchain()
-        if response:
-            save_itinerary(response)
-            
-    if selected_itinerary:
-        st.markdown(selected_itinerary)
-        selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
-        st.markdown(selected_places_itinery)
+        plan_itinerary_with_langchain()
