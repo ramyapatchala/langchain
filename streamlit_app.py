@@ -175,7 +175,7 @@ else:
 if st.button("Generate AI Itinerary"):
     plan_itinerary_with_langchain()
 
-if selected_itinerary:
-    st.markdown("### 📋 Selected Itinerary")
+if selected_itinerary and selected_itinerary != 'None':
+    st.markdown(selected_itinerary)
     selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
     st.markdown(selected_places_itinery)
