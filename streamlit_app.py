@@ -7,43 +7,6 @@ from datetime import date
 from PIL import Image
 import io
 
-# Initialize session state for itinerary bucket and search history
-if 'itinerary_bucket' not in st.session_state:
-    st.session_state['itinerary_bucket'] = []
-if 'search_history' not in st.session_state:
-    st.session_state['search_history'] = []
-if 'itineraries' not in st.session_state:
-    st.session_state['itineraries'] = {}
-
-# Streamlit app title and sidebar filters
-st.title("🌍 **Travel Planner with AI** ✈️")
-st.markdown("Discover amazing places and plan your trip effortlessly!")
-
-# Sidebar with filters, search history, and saved itineraries
-with st.sidebar:
-    st.markdown("### Filters")
-    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 3.5, step=0.1)
-    max_results = st.number_input("Max Results to Display", min_value=1, max_value=20, value=9)
-    st.markdown("___")
-    st.markdown("### Search History")
-    selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
-    st.markdown("### Saved Itineraries")
-    if st.session_state['itineraries']:
-        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + st.session_state['itineraries'])
-        if selected_itinerary:
-            st.markdown("### 📋 Selected Itinerary")
-            selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
-            st.markdown(selected_places_itinery)
-    else:
-        st.write("No saved itineraries yet.")
-
-# API key for Google Places API
-api_key = st.secrets["api_key"]
-openai_api_key = st.secrets["openai_api_key"]
-
-# Initialize LangChain ChatOpenAI model
-llm = ChatOpenAI(temperature=0.3, model="gpt-4o-mini", openai_api_key=openai_api_key, verbose=True)
-
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -147,6 +110,42 @@ def save_itinerary(response):
             # Clear the input after saving
         st.experimental_rerun()
 
+# Initialize session state for itinerary bucket and search history
+if 'itinerary_bucket' not in st.session_state:
+    st.session_state['itinerary_bucket'] = []
+if 'search_history' not in st.session_state:
+    st.session_state['search_history'] = []
+if 'itineraries' not in st.session_state:
+    st.session_state['itineraries'] = {}
+
+# Streamlit app title and sidebar filters
+st.title("🌍 **Travel Planner with AI** ✈️")
+st.markdown("Discover amazing places and plan your trip effortlessly!")
+
+# Sidebar with filters, search history, and saved itineraries
+with st.sidebar:
+    st.markdown("### Filters")
+    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 3.5, step=0.1)
+    max_results = st.number_input("Max Results to Display", min_value=1, max_value=20, value=9)
+    st.markdown("___")
+    st.markdown("### Search History")
+    selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
+    st.markdown("### Saved Itineraries")
+    if st.session_state['itineraries']:
+        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + st.session_state['itineraries'])
+        if selected_itinerary:
+            st.markdown("### 📋 Selected Itinerary")
+            selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
+            st.markdown(selected_places_itinery)
+    else:
+        st.write("No saved itineraries yet.")
+
+# API key for Google Places API
+api_key = st.secrets["api_key"]
+openai_api_key = st.secrets["openai_api_key"]
+
+# Initialize LangChain ChatOpenAI model
+llm = ChatOpenAI(temperature=0.3, model="gpt-4o-mini", openai_api_key=openai_api_key, verbose=True)
 
 # Handle search input
 user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
