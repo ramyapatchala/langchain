@@ -107,7 +107,9 @@ def save_itinerary(response):
         st.warning("Itinerary with this title already exists. Choose a unique title.")
     else:
             # Save itinerary to session state
-        [itinerary_title]=response
+        st.markdown('here')
+        st.session_state.itinerary[itinerary_title]=response
+        st.markdown(st.session_state['itineraries'].keys())
         st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
                 # Clear the input after saving
         st.experimental_rerun()
