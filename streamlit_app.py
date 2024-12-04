@@ -99,17 +99,16 @@ def save_itinerary(response):
     # Create a text input for the itinerary title
     itinerary_title = st.text_input("Enter a title for this itinerary:", placeholder="Save this itinerary")
     # Add a save button to explicitly trigger saving
-    if st.button('Save this itinerary'):
-        if not itinerary_title:
-            st.warning("Please enter a title for your itinerary.")
-        elif itinerary_title in st.session_state['itineraries']:
-            st.warning("Itinerary with this title already exists. Choose a unique title.")
-        else:
+    if not itinerary_title:
+        st.warning("Please enter a title for your itinerary.")
+    elif itinerary_title in st.session_state['itineraries']:
+        st.warning("Itinerary with this title already exists. Choose a unique title.")
+    else:
             # Save itinerary to session state
-            st.session_state['itineraries'][itinerary_title]=response
-            st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
+        st.session_state['itineraries'][itinerary_title]=response
+        st.markdown(f"Itinerary '{itinerary_title}' saved successfully!")
                 # Clear the input after saving
-            st.experimental_rerun()
+        st.experimental_rerun()
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
