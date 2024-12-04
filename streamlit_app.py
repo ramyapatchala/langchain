@@ -131,14 +131,7 @@ with st.sidebar:
     st.markdown("### Search History")
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
     st.markdown("### Saved Itineraries")
-    if st.session_state['itineraries']:
-        selected_itinerary = st.selectbox("Choose an Itinerary", options=[""] + st.session_state['itineraries'])
-        if selected_itinerary:
-            st.markdown("### 📋 Selected Itinerary")
-            selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
-            st.markdown(selected_places_itinery)
-    else:
-        st.write("No saved itineraries yet.")
+    selected_itinerary = st.selectbox("Recent Itinerary", options=[""] + st.session_state['itineraries'])    
 
 # API key for Google Places API
 api_key = st.secrets["api_key"]
@@ -181,3 +174,8 @@ else:
 # Generate itinerary button
 if st.button("Generate AI Itinerary"):
     plan_itinerary_with_langchain()
+
+if selected_itinerary:
+    st.markdown("### 📋 Selected Itinerary")
+    selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
+    st.markdown(selected_places_itinery)
