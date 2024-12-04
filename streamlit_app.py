@@ -92,8 +92,9 @@ def plan_itinerary_with_langchain():
 
     with st.spinner("Generating your itinerary..."):
         response = llm([HumanMessage(content=formatted_prompt)])
-        st.markdown(response.content)
-        save_itinerary(response.content)
+        return response.content
+        #st.markdown(response.content)
+        #save_itinerary(response.content)
 
 def save_itinerary(response):
     st.markdown('check')
@@ -177,8 +178,10 @@ if user_query:
     
     # Generate itinerary button
     if st.button("Generate AI Itinerary"):
-        plan_itinerary_with_langchain()
-    
+        response = plan_itinerary_with_langchain()
+        if response:
+            save_itinerary(response)
+            
     if selected_itinerary:
         st.markdown(selected_itinerary)
         selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
