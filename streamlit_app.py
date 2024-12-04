@@ -158,24 +158,24 @@ if user_query:
     else:
         display_places_grid(places_data)
 
-# Show itinerary bucket
-st.markdown("### 📋 Itinerary Bucket")
-if st.session_state['itinerary_bucket']:
-    for place in st.session_state['itinerary_bucket']:
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(place)
-        with col2:
-            if st.button("Remove", key=f"remove_{place}"):
-                st.session_state['itinerary_bucket'].remove(place)
-else:
-    st.write("Your itinerary bucket is empty.")
-
-# Generate itinerary button
-if st.button("Generate AI Itinerary"):
-    plan_itinerary_with_langchain()
-
-if selected_itinerary:
-    st.markdown(selected_itinerary)
-    selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
-    st.markdown(selected_places_itinery)
+    # Show itinerary bucket
+    st.markdown("### 📋 Itinerary Bucket")
+    if st.session_state['itinerary_bucket']:
+        for place in st.session_state['itinerary_bucket']:
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(place)
+            with col2:
+                if st.button("Remove", key=f"remove_{place}"):
+                    st.session_state['itinerary_bucket'].remove(place)
+    else:
+        st.write("Your itinerary bucket is empty.")
+    
+    # Generate itinerary button
+    if st.button("Generate AI Itinerary"):
+        plan_itinerary_with_langchain()
+    
+    if selected_itinerary:
+        st.markdown(selected_itinerary)
+        selected_places_itinery = st.session_state['itineraries'][selected_itinerary]
+        st.markdown(selected_places_itinery)
