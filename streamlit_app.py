@@ -15,6 +15,15 @@ page_bg_img = '''
 background-image: url("https://raw.githubusercontent.com/ramyapatchala/langchain/main/image1.jpg");
 background-size: cover;
 }
+.text-box {
+    background-color: #D3D3D3; /* Light gray background */
+    color: black; /* Black text */
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
 </style>
 '''
 
