@@ -7,28 +7,6 @@ from datetime import date
 from PIL import Image
 import io
 
-
-page_bg_img = '''
-<style>
-
-[data-testid="stAppViewContainer"] {
-background-image: url("https://raw.githubusercontent.com/ramyapatchala/langchain/main/bkgimg.jpeg");
-background-size: cover;
-}
-.text-box {
-    background-color: #D3D3D3; /* Light gray background */
-    color: black; /* Black text */
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-</style>
-'''
-
-st.markdown(page_bg_img, unsafe_allow_html=True)
-
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -54,10 +32,10 @@ def fetch_and_resize_image(url, size=(200, 200)):
         img = Image.open(io.BytesIO(response.content))
         img = img.resize(size)  # Resize to uniform dimensions
         return img
-    except Exception:
+    except Exception as e:
         return None  # Return None if fetching or resizing fails
 
-# Display places in a 3x3 grid layout
+# Display places in 3x3 grid layout with uniform image sizes
 def display_places_grid(places):
     cols = st.columns(3)
     for idx, place in enumerate(places):
@@ -73,11 +51,11 @@ def display_places_grid(places):
             if photo_url:
                 img = fetch_and_resize_image(photo_url)
                 if img:
-                    st.image(img, caption="", use_column_width=False)
-                st.markdown(f'<div class="text-box">{name}</div>', unsafe_allow_html=True)
+                    st.image(img, caption=name, use_column_width=False)
+                else:
+                    st.write(name)
             else:
-                st.markdown(f'<div class="text-box">{name}</div>', unsafe_allow_html=True)
-
+                st.write(name)
 
             st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
             if name in st.session_state['itinerary_bucket']:
@@ -86,7 +64,7 @@ def display_places_grid(places):
                 if st.button("Add to Itinerary", key=f"add_{idx}"):
                     st.session_state['itinerary_bucket'].append(name)
 
-# Generate itinerary using LangChain
+# Function to generate an itinerary using LangChain
 def plan_itinerary_with_langchain():
     if not st.session_state['itinerary_bucket']:
         st.warning("No places in itinerary bucket!")
@@ -134,7 +112,7 @@ with st.sidebar:
     st.markdown("___")
     st.markdown("### Search History")
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
-
+    
 # API key for Google Places API
 api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["openai_api_key"]
@@ -166,11 +144,10 @@ if user_query:
         for place in st.session_state['itinerary_bucket']:
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.markdown(f'<div class="text-box">{place}</div>', unsafe_allow_html=True)
+                st.write(place)
             with col2:
                 if st.button("Remove", key=f"remove_{place}"):
                     st.session_state['itinerary_bucket'].remove(place)
-
     else:
         st.write("Your itinerary bucket is empty.")
     
