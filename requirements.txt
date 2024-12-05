@@ -17,3 +17,4 @@ requests
 chromadb
 pysqlite3-binary
 protobuf>=3.20,<5.0
+streamlit_option_menu
