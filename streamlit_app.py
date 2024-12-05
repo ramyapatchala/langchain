@@ -120,7 +120,6 @@ def handle_tool_calls(tool_call):
     weather_data, places_data = None, None
 
     if 'location' in arguments:
-            
             location = arguments.get("location")
             if location:
                 st.markdown(f"Fetching weather for: **{location}**")
@@ -183,7 +182,7 @@ user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants i
 if user_query:
     if user_query not in st.session_state["search_history"]:
         st.session_state["search_history"].append(user_query)
-
+    user_query = user_query + " and tell me the weather at this place"
     st.session_state['messages'].append({"role": "user", "content": user_query})
 
     # Get response from OpenAI
