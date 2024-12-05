@@ -103,8 +103,8 @@ def chat_completion_request(messages):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
-            functions = functions,
-            function_call="auto"
+            tools=tools,
+            tool_choice="auto",
         )
         return response
     except Exception as e:
