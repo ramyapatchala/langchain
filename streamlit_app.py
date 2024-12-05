@@ -3,6 +3,9 @@ import requests
 from openai import OpenAI
 import json
 import time
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import chromadb
 
 # Initialize session state for chat history and search history
