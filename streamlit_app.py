@@ -115,10 +115,13 @@ def chat_completion_request(messages):
 
 # Handle function calls from GPT response
 def handle_tool_calls(tool_call):
-    st.markdown(len(tool_call))
-    tool_call_data = tool_call[0]
-    arguments = json.loads(tool_call_data.function.arguments)
-        
+    if len(tool_call) == 2:
+        for tool in tool_call:
+            arguments.update(json.loads(tool.function.arguments))
+    else:
+        tool_call_data = tool_call[0]
+        arguments = json.loads(tool_call_data.function.arguments)
+    st.markdown(arguments)
     weather_data, places_data = None, None
 
     if 'location' in arguments:
