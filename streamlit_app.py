@@ -12,7 +12,7 @@ page_bg_img = '''
 <style>
 
 [data-testid="stAppViewContainer"] {
-background-image: url("https://github.com/ramyapatchala/langchain/blob/main/istockphoto-610041376-612x612.jpg");
+background-image: url("https://raw.githubusercontent.com/ramyapatchala/langchain/main/istockphoto-610041376-612x612.jpg");
 background-size: cover;
 }
 </style>
