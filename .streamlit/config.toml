@@ -3,7 +3,6 @@ showErrorDetails = false
 
 
 [theme]
-[theme]
 primaryColor = "#1E88E5"  # Sky Blue
 backgroundColor = "#F3F4F6"  # Light Gray
 secondaryBackgroundColor = "#B0BEC5"  # Steel Gray
