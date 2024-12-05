@@ -100,6 +100,7 @@ def fetch_places_from_google(query):
 def chat_completion_request(messages):
     try:
         client = OpenAI(api_key=openai_api_key)
+        st.markdown(messages)
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
@@ -190,6 +191,7 @@ if user_query:
         response = chat_completion_request(st.session_state['messages'])
 
     if response:
+        st.markdown(response)
         tool_call = response.choices[0].message.tool_calls
         
         # Handle function call from GPT
