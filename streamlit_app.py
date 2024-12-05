@@ -101,6 +101,7 @@ def fetch_places_from_google(query):
 def chat_completion_request(messages):
     try:
         client = OpenAI(api_key=openai_api_key)
+        st.markdown(messages)
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
@@ -116,6 +117,7 @@ def chat_completion_request(messages):
 # Handle function calls from GPT response
 def handle_tool_calls(tool_call):
     arguments = {}
+    st.markdown(tool_call)
     if len(tool_call) == 2:
         for tool in tool_call:
             arguments.update(json.loads(tool.function.arguments))
@@ -140,6 +142,7 @@ def handle_tool_calls(tool_call):
                     messages=messages,
                     stream = True
                 )
+                location = ''
                 message_placeholder = st.empty()
                 full_response = ""
                 if stream:
@@ -155,7 +158,7 @@ def handle_tool_calls(tool_call):
             if query:
                 st.markdown(f"Searching for: **{query}**")
                 places_data = fetch_places_from_google(query)
-
+                query = ''
                 if isinstance(places_data, dict) and "error" in places_data:
                     st.error(f"Error: {places_data['error']}")
                 elif not places_data:
