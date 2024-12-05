@@ -123,14 +123,14 @@ def get_Weather(location, API_key):
     if "," in location:
         state = location.split(",")[1].strip()
     
-    # RAG Lookup in ChromaDB
+    # RAG Lookup in ChromaDB based on separate fields for city and state
     try:
-        query_text = city if not state else f"{city}, {state}"
+        # Search using both city and state individually if available
         query_results = collection.query(
-            query_texts=[query_text],
+            query_texts=[city, state] if state else [city],
             n_results=1  # Return the best match
         )
-        st.write(query_results)
+        
         if query_results["documents"]:
             # Get the first match's ID
             location_id = query_results["documents"][0]["id"]
