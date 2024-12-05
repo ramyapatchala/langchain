@@ -2,5 +2,6 @@
 showErrorDetails = false
 
 [theme]
-primaryColor = "#e394eb"
+primaryColor = "#F63366"
 backgroundColor = "#e394eb"
+secondaryBackgroundColor = "#6f6294"
