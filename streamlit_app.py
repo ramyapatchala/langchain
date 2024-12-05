@@ -11,7 +11,7 @@ import io
 page_bg_img = '''
 <style>
 
-[data=testid="stAppViewContainer"] {
+[data-testid="stAppViewContainer"] {
 background-image: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg");
 background-size: cover;
 }
