@@ -122,7 +122,6 @@ def handle_tool_calls(tool_call):
     else:
         tool_call_data = tool_call[0]
         arguments = json.loads(tool_call_data.function.arguments)
-    st.markdown(arguments)
     weather_data, places_data = None, None
 
     if 'location' in arguments:
@@ -176,13 +175,8 @@ def handle_tool_calls(tool_call):
                             map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
                             st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
 
-
-# Display chat history
-for message in st.session_state['messages']:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
         
-# Display chat history and handle user input
+# handle user input
 user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants in Los Angeles'):", value=selected_query)
 
 if user_query:
@@ -196,7 +190,6 @@ if user_query:
         response = chat_completion_request(st.session_state['messages'])
 
     if response:
-        st.markdown(response)
         tool_call = response.choices[0].message.tool_calls
         
         # Handle function call from GPT
