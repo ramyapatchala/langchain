@@ -130,6 +130,7 @@ def get_Weather(location, API_key):
             query_texts=[query_text],
             n_results=1  # Return the best match
         )
+        st.write(query_results)
         if query_results["documents"]:
             # Get the first match's ID
             location_id = query_results["documents"][0]["id"]
