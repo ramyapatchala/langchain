@@ -6,24 +6,24 @@ from langchain.schema import HumanMessage
 from datetime import date
 from PIL import Image
 import io
-from io import BytesIO
 
-# Use the raw URL for the image
-#image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg"
-
- st.markdown(
+# Background image styling
+st.markdown(
     """
     <style>
     .reportview-container {
-        background: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg")
+        background: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg");
+        background-size: cover;
     }
-   .sidebar .sidebar-content {
-        background: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg")
+    .sidebar .sidebar-content {
+        background: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg");
+        background-size: cover;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -49,10 +49,10 @@ def fetch_and_resize_image(url, size=(200, 200)):
         img = Image.open(io.BytesIO(response.content))
         img = img.resize(size)  # Resize to uniform dimensions
         return img
-    except Exception as e:
+    except Exception:
         return None  # Return None if fetching or resizing fails
 
-# Display places in 3x3 grid layout with uniform image sizes
+# Display places in a 3x3 grid layout
 def display_places_grid(places):
     cols = st.columns(3)
     for idx, place in enumerate(places):
@@ -81,7 +81,7 @@ def display_places_grid(places):
                 if st.button("Add to Itinerary", key=f"add_{idx}"):
                     st.session_state['itinerary_bucket'].append(name)
 
-# Function to generate an itinerary using LangChain
+# Generate itinerary using LangChain
 def plan_itinerary_with_langchain():
     if not st.session_state['itinerary_bucket']:
         st.warning("No places in itinerary bucket!")
@@ -129,7 +129,7 @@ with st.sidebar:
     st.markdown("___")
     st.markdown("### Search History")
     selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
-    
+
 # API key for Google Places API
 api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["openai_api_key"]
