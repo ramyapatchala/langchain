@@ -1,16 +1,89 @@
 import streamlit as st
 import requests
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.schema import HumanMessage
-from datetime import date
-from PIL import Image
-import io
+from openai import OpenAI
+import json
+import time
+
+# Initialize session state for chat history and search history
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = []
+if 'search_history' not in st.session_state:
+    st.session_state['search_history'] = []
+
+# Streamlit app title and sidebar filters
+st.title("🌍 **Interactive Travel Guide Chatbot** 🤖")
+st.markdown("Your personal travel assistant to explore amazing places.")
+
+with st.sidebar:
+    st.markdown("### Filters")
+    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 3.5, step=0.1)
+    max_results = st.number_input("Max Results to Display", min_value=1, max_value=20, value=10)
+    st.markdown("___")
+    st.markdown("### Search History")
+    selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
+
+# API keys
+api_key = st.secrets["api_key"]
+openai_api_key = st.secrets["key1"]
+
+
+functions = [
+            {
+            "name": "multi_Func",
+            "description": "Call two functions in one call",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "get_Weather": {
+                        "name": "get_Weather",
+                        "description": "Get the weather for the location.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "location": {
+                                    "type": "string",
+                                    "description": "The city and state, e.g. San Francisco, CA",
+                                }
+                            },
+                            "required": ["location"],
+                        }
+                    },
+                    "get_places_from_google": {
+                        "name": "get_places_from_google",
+                        "description": "Get details of places like hotels, restaurants, tourism locations, lakes, mountain, parks etc. from Google Places API. As long as it is some information about Cities or Towns, any minute details of facilities or places in cities, we can get that information here e.g places in New York, Tourist places in Syracuse etc give details about places in that cities",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                               "query": {"type": "string", "description": "Search query for Google Places API."}
+                            },
+                            "required": ["query"],
+                        }
+                    }
+                }, "required": ["get_Weather", "get_places_from_google"],
+            }
+        }
+]
+
+# Weather data function
+def get_Weather(location, API_key):
+    if "," in location:
+        location = location.split(",")[0].strip()
+
+    urlbase = "https://api.openweathermap.org/data/2.5/"
+    urlweather = f"weather?q={location}&appid={API_key}"
+    url = urlbase + urlweather
+    response = requests.get(url)
+    data = response.json()
+    
+    return data
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-    params = {"query": query, "key": api_key}
+    params = {
+        "query": query,
+        "key": api_key
+    }
     try:
         response = requests.get(base_url, params=params)
         if response.status_code == 200:
@@ -24,133 +97,112 @@ def fetch_places_from_google(query):
     except Exception as e:
         return {"error": str(e)}
 
-# Helper function to resize images
-def fetch_and_resize_image(url, size=(200, 200)):
+
+# Function for interacting with OpenAI's API
+def chat_completion_request(messages):
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        img = Image.open(io.BytesIO(response.content))
-        img = img.resize(size)  # Resize to uniform dimensions
-        return img
+        client = OpenAI(api_key=openai_api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            functions = functions,
+            function_call="auto"
+        )
+        return response
     except Exception as e:
-        return None  # Return None if fetching or resizing fails
+        st.error(f"Error generating response: {e}")
+        return None
 
-# Display places in 3x3 grid layout with uniform image sizes
-def display_places_grid(places):
-    cols = st.columns(3)
-    for idx, place in enumerate(places):
-        with cols[idx % 3]:
-            name = place.get("name", "No Name")
-            lat, lng = place["geometry"]["location"].values()
-            map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
-            photo_url = None
-            if "photos" in place:
-                photo_ref = place["photos"][0]["photo_reference"]
-                photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_ref}&key={api_key}"
 
-            if photo_url:
-                img = fetch_and_resize_image(photo_url)
-                if img:
-                    st.image(img, caption=name, use_column_width=False)
+# Handle function calls from GPT response
+def handle_function_calls(response_message):
+    function_call = response_message.function_call
+    if function_call:
+        function_name = function_call.name
+        function_args = json.loads(function_call.arguments)
+        
+        weather_data, places_data = None, None
+
+        # Process get_Weather if provided
+        if function_args.get("get_Weather"):
+            location = function_args["get_Weather"].get("location")
+            if location:
+                st.markdown(f"Fetching weather for: **{location}**")
+                open_api_key = st.secrets['OpenWeatherAPIkey']
+                weather_data = get_Weather(location, open_api_key)
+                messages = [
+                    {"role": "user", "content": "Explain in normal English in few words including what kind of clothing can be worn and what tips need to be taken based on the following weather data."},
+                    {"role": "user", "content": json.dumps(weather_data)}
+                ]
+                client = OpenAI(api_key=openai_api_key)
+                stream = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=messages,
+                    stream = True
+                )
+                message_placeholder = st.empty()
+                full_response = ""
+                if stream:
+                    for chunk in stream:
+                        if chunk.choices[0].delta.content is not None:
+                            full_response += chunk.choices[0].delta.content
+                            message_placeholder.markdown(full_response + "▌")
+                    message_placeholder.markdown(full_response)
+                
+        # Process get_places_from_google if provided
+        if function_args.get("get_places_from_google"):
+            query = function_args["get_places_from_google"].get("query")
+            if query:
+                st.markdown(f"Searching for: **{query}**")
+                places_data = fetch_places_from_google(query)
+
+                if isinstance(places_data, dict) and "error" in places_data:
+                    st.error(f"Error: {places_data['error']}")
+                elif not places_data:
+                    st.warning("No places found matching your criteria.")
                 else:
-                    st.write(name)
-            else:
-                st.write(name)
+                    st.markdown("### 📍 Top Recommendations")
+                    for idx, place in enumerate(places_data):
+                        with st.expander(f"{idx + 1}. {place.get('name', 'No Name')}"):
+                            st.write(f"📍 **Address**: {place.get('formatted_address', 'No address available')}")
+                            st.write(f"🌟 **Rating**: {place.get('rating', 'N/A')} (Based on {place.get('user_ratings_total', 'N/A')} reviews)")
+                            st.write(f"💲 **Price Level**: {place.get('price_level', 'N/A')}")
+                            if "photos" in place:
+                                photo_ref = place["photos"][0]["photo_reference"]
+                                photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_ref}&key={api_key}"
+                                st.image(photo_url, caption=place.get("name", "Photo"), use_column_width=True)
+                            lat, lng = place["geometry"]["location"].values()
+                            map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
+                            st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
 
-            st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
-            if name in st.session_state['itinerary_bucket']:
-                st.button("Added", disabled=True, key=f"added_{idx}")
-            else:
-                if st.button("Add to Itinerary", key=f"add_{idx}"):
-                    st.session_state['itinerary_bucket'].append(name)
-
-# Function to generate an itinerary using LangChain
-def plan_itinerary_with_langchain():
-    if not st.session_state['itinerary_bucket']:
-        st.warning("No places in itinerary bucket!")
-        return
-
-    st.markdown("### 🗺️ AI-Generated Itinerary")
-    places_list = "\n".join(st.session_state['itinerary_bucket'])
-
-    if selected_date:
-        st.info(f"Planning itinerary for {selected_date.strftime('%A, %B %d, %Y')} 🎉")
     else:
-        st.info("No specific date chosen. Starting from 9:00 AM by default.")
+        st.error("Function call is incomplete.")
 
-    prompt_template = PromptTemplate(
-        input_variables=["places", "date"],
-        template="""Plan a travel itinerary for the following places:
-        {places}
-        Date of travel: {date}
-        Provide a detailed plan including the best order to visit, time at each location, transportation time, and meal breaks.
-        """
-    )
+# Display chat history
+for message in st.session_state['messages']:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        
+# Display chat history and handle user input
+user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants in Los Angeles'):", value=selected_query)
 
-    date_str = selected_date.strftime('%A, %B %d, %Y') if selected_date else "Not specified"
-    formatted_prompt = prompt_template.format(places=places_list, date=date_str)
-
-    with st.spinner("Generating your itinerary..."):
-        response = llm([HumanMessage(content=formatted_prompt)])
-        st.markdown(response.content)
-
-# Initialize session state for itinerary bucket and search history
-if 'itinerary_bucket' not in st.session_state:
-    st.session_state['itinerary_bucket'] = []
-if 'search_history' not in st.session_state:
-    st.session_state['search_history'] = []
-
-# Streamlit app title and sidebar filters
-st.title("🌍 **Travel Planner with AI** ✈️")
-st.markdown("Discover amazing places and plan your trip effortlessly!")
-
-# Sidebar with filters, search history, and saved itineraries
-with st.sidebar:
-    st.markdown("### Filters")
-    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 3.5, step=0.1)
-    max_results = st.number_input("Max Results to Display", min_value=1, max_value=20, value=9)
-    st.markdown("___")
-    st.markdown("### Search History")
-    selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
-    
-# API key for Google Places API
-api_key = st.secrets["api_key"]
-openai_api_key = st.secrets["openai_api_key"]
-
-# Initialize LangChain ChatOpenAI model
-llm = ChatOpenAI(temperature=0.3, model="gpt-4o-mini", openai_api_key=openai_api_key, verbose=True)
-
-# Handle search input
-user_query = st.text_input("🔍 Search for places (e.g., 'restaurants in Paris'):", value=selected_query)
-selected_date = st.date_input("Choose a date for your trip (optional):", value=None)
 if user_query:
     if user_query not in st.session_state["search_history"]:
         st.session_state["search_history"].append(user_query)
 
-    st.markdown(f"### Results for: **{user_query}**")
-    with st.spinner("Fetching places..."):
-        places_data = fetch_places_from_google(user_query)
+    st.session_state['messages'].append({"role": "user", "content": user_query})
 
-    if isinstance(places_data, dict) and "error" in places_data:
-        st.error(f"Error: {places_data['error']}")
-    elif not places_data:
-        st.warning("No places found matching your criteria.")
-    else:
-        display_places_grid(places_data)
+    # Get response from OpenAI
+    with st.spinner("Generating response..."):
+        response = chat_completion_request(st.session_state['messages'])
 
-    # Show itinerary bucket
-    st.markdown("### 📋 Itinerary Bucket")
-    if st.session_state['itinerary_bucket']:
-        for place in st.session_state['itinerary_bucket']:
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.write(place)
-            with col2:
-                if st.button("Remove", key=f"remove_{place}"):
-                    st.session_state['itinerary_bucket'].remove(place)
-    else:
-        st.write("Your itinerary bucket is empty.")
-    
-    # Generate itinerary button
-    if st.button("Generate AI Itinerary"):
-        plan_itinerary_with_langchain()
+    if response:
+        response_message = response.choices[0].message
+        
+        # Handle function call from GPT
+        if response_message.function_call:
+            handle_function_calls(response_message)
+        else:
+            st.session_state['messages'].append({"role": "assistant", "content": response_message.content})
+            with st.chat_message("assistant"):
+                st.markdown(response_message.content)
