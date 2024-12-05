@@ -115,7 +115,7 @@ def setup_vectordb():
         client = chromadb.PersistentClient(path=db_path)
 
     # Return collection for further use
-    return client.get_collection(name="locations")
+    #return client.get_collection(name="locations")
 
 def get_Weather(location, API_key):
     # Process location (e.g., "Syracuse, NY")
