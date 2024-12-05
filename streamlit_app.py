@@ -52,7 +52,8 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                               "query": {"type": "string", "description": "Search query for Google Places API."}
+                               "query": {"type": "string", 
+                                         "description": "Places or facilities in city/location e.g Places in New York"}
                 },
                 "required": ["query"],
             },
