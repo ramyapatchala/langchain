@@ -9,25 +9,21 @@ import io
 from io import BytesIO
 
 # Use the raw URL for the image
-image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg"
+#image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg"
 
-# Fetch the image
-response = requests.get(image_url)
-
-# Create two columns (left for chat and right for the image)
-col1, col2 = st.columns([2, 1])  # Adjust ratio as needed (2 parts left, 1 part right)
-
-with col1:
- Our entire code 
-
-
-with col2:
-    # Display the image in the second column (right side)
-    if response.status_code == 200:
-        image = Image.open(BytesIO(response.content))
-        st.image(image, use_column_width=True)
-    else:
-        st.error(f"Failed to load image. Status code: {response.status_code}")
+ st.markdown(
+    """
+    <style>
+    .reportview-container {
+        background: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg")
+    }
+   .sidebar .sidebar-content {
+        background: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg")
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
