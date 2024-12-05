@@ -7,21 +7,17 @@ from datetime import date
 from PIL import Image
 import io
 
-# Background image styling
-st.markdown(
-    f"""
-    <style>
-    body {{
-        background-image: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
+page_bg_img = '''
+<style>
+body {
+background-image: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg");
+background-size: cover;
+}
+</style>
+'''
+
+st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
