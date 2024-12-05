@@ -5,8 +5,6 @@ import json
 import time
 
 # Initialize session state for chat history and search history
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 
@@ -186,11 +184,11 @@ if user_query:
     if user_query not in st.session_state["search_history"]:
         st.session_state["search_history"].append(user_query)
     user_query = user_query + " and tell me the weather at this place"
-    st.session_state['messages'].append({"role": "user", "content": user_query})
+    message = {"role": "user", "content": user_query}
 
     # Get response from OpenAI
     with st.spinner("Generating response..."):
-        response = chat_completion_request(st.session_state['messages'])
+        response = chat_completion_request([message])
 
     if response:
         tool_call = response.choices[0].message.tool_calls
@@ -199,6 +197,5 @@ if user_query:
         if tool_call:
             handle_tool_calls(tool_call)
         else:
-            st.session_state['messages'].append({"role": "assistant", "content": response_message.content})
             with st.chat_message("assistant"):
                 st.markdown(response_message.content)
