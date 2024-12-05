@@ -73,11 +73,11 @@ def display_places_grid(places):
             if photo_url:
                 img = fetch_and_resize_image(photo_url)
                 if img:
-                    st.image(img, caption=name, use_column_width=False)
-                else:
-                    st.write(name)
+                    st.image(img, caption="", use_column_width=False)
+                st.markdown(f'<div class="text-box">{name}</div>', unsafe_allow_html=True)
             else:
-                st.write(name)
+                st.markdown(f'<div class="text-box">{name}</div>', unsafe_allow_html=True)
+
 
             st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
             if name in st.session_state['itinerary_bucket']:
@@ -166,10 +166,11 @@ if user_query:
         for place in st.session_state['itinerary_bucket']:
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.write(place)
+                st.markdown(f'<div class="text-box">{place}</div>', unsafe_allow_html=True)
             with col2:
                 if st.button("Remove", key=f"remove_{place}"):
                     st.session_state['itinerary_bucket'].remove(place)
+
     else:
         st.write("Your itinerary bucket is empty.")
     
