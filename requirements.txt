@@ -1,4 +1,4 @@
-streamlit==1.33.0
+streamlit
 langchain==0.1.19
 langchain-openai==0.1.6
 langchain-chroma==0.1.0
