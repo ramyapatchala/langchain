@@ -15,3 +15,5 @@ pytube==15.0.0
 youtube-transcript-api==0.6.2
 requests
 chromadb
+pysqlite3-binary
+protobuf>=3.20,<5.0
