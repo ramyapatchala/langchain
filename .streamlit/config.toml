@@ -2,6 +2,8 @@
 showErrorDetails = false
 
 [theme]
-primaryColor = "#F63366"
-backgroundColor = "#e394eb"
-secondaryBackgroundColor = "#6f6294"
+primaryColor = "#FF5722"  # Vibrant orange (sunset-inspired)
+backgroundColor = "#F3F4F6"  # Light neutral (cloudy sky background)
+secondaryBackgroundColor = "#E1E8ED"  # Soft blue-gray (ocean foam)
+textColor = "#2E3A59"  # Deep blue (readable and elegant)
+font = "sans serif"
