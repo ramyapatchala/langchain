@@ -2,9 +2,10 @@
 showErrorDetails = false
 
 [theme]
-primaryColor = "#FF6F61"
-backgroundColor = "#FFEBCD"
-secondaryBackgroundColor = "#008080"
+[theme]
+primaryColor = "#007BFF"
+backgroundColor = "#F0F8FF"
+secondaryBackgroundColor = "#FFD700"
 textColor = "#000000"
 
 font = "sans serif"
