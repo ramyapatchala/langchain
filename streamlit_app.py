@@ -12,7 +12,7 @@ page_bg_img = '''
 <style>
 
 [data-testid="stAppViewContainer"] {
-background-image: url("https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg");
+background-image: url("istockphoto-610041376-612x612.jpg");
 background-size: cover;
 }
 </style>
