@@ -115,6 +115,7 @@ def chat_completion_request(messages):
 
 # Handle function calls from GPT response
 def handle_tool_calls(tool_call):
+    arguments = {}
     if len(tool_call) == 2:
         for tool in tool_call:
             arguments.update(json.loads(tool.function.arguments))
