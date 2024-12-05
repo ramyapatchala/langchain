@@ -2,8 +2,5 @@
 showErrorDetails = false
 
 [theme]
-primaryColor = "#007BFF"
-backgroundColor = "#F0F8FF"
-secondaryBackgroundColor = "#d44500"
-textColor = "#000000"
-font = "sans serif"
+base="light"
+primaryColor="#d44500"
