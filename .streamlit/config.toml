@@ -1,6 +1,10 @@
 [client]
 showErrorDetails = false
 
+
 [theme]
-base="skyblue"
-primaryColor="#d44500"
+primaryColor = "#007BFF"
+backgroundColor = "#87CEEB"
+secondaryBackgroundColor = "#edf2f4"
+textColor = "#000000"
+font = "sans serif"
