@@ -6,7 +6,28 @@ from langchain.schema import HumanMessage
 from datetime import date
 from PIL import Image
 import io
+from io import BytesIO
 
+# Use the raw URL for the image
+image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg"
+
+# Fetch the image
+response = requests.get(image_url)
+
+# Create two columns (left for chat and right for the image)
+col1, col2 = st.columns([2, 1])  # Adjust ratio as needed (2 parts left, 1 part right)
+
+with col1:
+ Our entire code 
+
+
+with col2:
+    # Display the image in the second column (right side)
+    if response.status_code == 200:
+        image = Image.open(BytesIO(response.content))
+        st.image(image, use_column_width=True)
+    else:
+        st.error(f"Failed to load image. Status code: {response.status_code}")
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
