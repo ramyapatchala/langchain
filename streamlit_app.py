@@ -3,6 +3,7 @@ import requests
 from openai import OpenAI
 import json
 import time
+import chromadb
 
 # Initialize session state for chat history and search history
 if 'search_history' not in st.session_state:
@@ -61,18 +62,90 @@ tools = [
 
 
 
-# Weather data function
-def get_Weather(location, API_key):
-    if "," in location:
-        location = location.split(",")[0].strip()
+import chromadb
 
-    urlbase = "https://api.openweathermap.org/data/2.5/"
-    urlweather = f"weather?q={location}&appid={API_key}"
-    url = urlbase + urlweather
-    response = requests.get(url)
-    data = response.json()
+# Initialize ChromaDB client
+client = chromadb.Client()
+
+# Assume "locations" collection exists in ChromaDB
+collection = client.get_or_create_collection("locations")
+
+def setup_vectordb():
+    """
+    Set up the ChromaDB vector database for travel locations. 
+    It initializes the collection, adds documents, and checks for an existing database.
+    """
+    db_path = "Travel_VectorDB"
+
+    if not os.path.exists(db_path):
+        st.info("Setting up VectorDB for the first time...")
+        client = chromadb.PersistentClient(path=db_path)
+        
+        # Load travel locations data
+        data_file = "locations.json"  # Ensure this file exists in the working directory
+        if os.path.exists(data_file):
+            with open(data_file, "r", encoding="utf-8") as file:
+                data = json.load(file)
+            
+            for location in data:
+                collection.add(
+                    documents=[{
+                        "id": str(location["id"]),  # Ensure ID is a string
+                        "name": location["name"],
+                        "state": location["state"],
+                        "country": location["country"],
+                        "coord": location["coord"]
+                    }],
+                    metadatas=[{
+                        "id": location["id"],
+                        "name": location["name"],
+                        "state": location["state"],
+                        "country": location["country"]
+                    }],
+                    ids=[str(location["id"])]
+                )
+        else:
+            st.error(f"Data file '{data_file}' not found!")
+            return None
+    else:
+        client = chromadb.PersistentClient(path=db_path)
+
+    # Return collection for further use
+    return client.get_collection(name="locations")
+
+def get_Weather(location, API_key):
+    # Process location (e.g., "Syracuse, NY")
+    city, state = location.split(",")[0].strip(), None
+    if "," in location:
+        state = location.split(",")[1].strip()
     
-    return data
+    # RAG Lookup in ChromaDB
+    try:
+        query_text = city if not state else f"{city}, {state}"
+        query_results = collection.query(
+            query_texts=[query_text],
+            n_results=1  # Return the best match
+        )
+        if query_results["documents"]:
+            # Get the first match's ID
+            location_id = query_results["documents"][0]["id"]
+            st.markdown(f"Location found: **{query_results['documents'][0]['name']}** (ID: {location_id})")
+        else:
+            st.error(f"Location '{location}' not found in database.")
+            return None
+    except Exception as e:
+        st.error(f"Error during location lookup: {e}")
+        return None
+
+    # Use the `id` in the Weather API URL
+    url = f"https://api.openweathermap.org/data/2.5/weather?id={location_id}&appid={API_key}&units=metric"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error(f"Error fetching weather: {response.status_code} - {response.text}")
+        return None
+
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
@@ -174,7 +247,8 @@ def handle_tool_calls(tool_call):
                             map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
                             st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
 
-        
+setup_vectordb()
+      
 # handle user input
 user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants in Los Angeles'):", value=selected_query)
 
